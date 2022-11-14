@@ -1,59 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:uber/tela/cadastro.dart';
-class Home extends StatefulWidget {
-  const Home({super.key});
+
+class Cadastro extends StatefulWidget {
+  const Cadastro({super.key});
 
   @override
-  State<Home> createState() => _nameState();
+  State<Cadastro> createState() => _CadastroState();
 }
 
-class _nameState extends State<Home> {
-  
+class _CadastroState extends State<Cadastro> {
+
   TextEditingController _controllerEmail = TextEditingController();
   TextEditingController _controllerNome = TextEditingController();
+  TextEditingController _controllerSenha = TextEditingController();
+   
+   bool _escolhaSwitch = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xff37474f),
+        title: Text("Cadastro"),
+      ),
       body: Container(
         padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("imagens/fundo.png"),
-            fit: BoxFit.cover,
-            ),
-        ),
         child: Center(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
                children: [
-                Padding(padding: EdgeInsets.only(top: 60),
-                child: Image.asset("imagens/logo.png",
-                 width: 200 ,
-                 height: 150,
-                )
-              ),
-              Padding(padding: EdgeInsets.only(top: 30),
-               child: TextField(
-                controller: _controllerEmail,
-                keyboardType: TextInputType.emailAddress,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: "E-mail",
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.fromLTRB(32, 16, 32, 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)
-                  )
-                ),
-               )
-              ),
               Padding(padding: EdgeInsets.only(top: 5),
                child: TextField(
                 controller: _controllerNome,
-                keyboardType: TextInputType.text,
+                keyboardType: TextInputType.emailAddress,
+                autofocus: true,
                 decoration: InputDecoration(
                   hintText: "Nome",
                   filled: true,
@@ -65,10 +45,61 @@ class _nameState extends State<Home> {
                 ),
                )
               ),
+              Padding(padding: EdgeInsets.only(top:3),
+               child: TextField(
+                controller: _controllerEmail,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  hintText: "E-mail",
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: EdgeInsets.fromLTRB(32, 16, 32, 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10)
+                  )
+                ),
+               )
+              ),
+              Padding(padding: EdgeInsets.only(top: 3),
+               child: TextField(
+                controller: _controllerNome,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  hintText: "Senha",
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: EdgeInsets.fromLTRB(32, 16, 32, 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10)
+                  )
+                ),
+               )
+              ),
+              Padding(padding: EdgeInsets.only(top: 10, bottom: 5),
+               child: Row(
+                children: [
+                  Text("Passageiro"),
+                  Padding(padding: EdgeInsets.only(left: 3, right:3),
+                   child: Switch(
+                    activeColor: Color(0xff37474f),
+                    value: _escolhaSwitch,
+                    onChanged: (valor){
+
+                      setState(() {
+                         _escolhaSwitch = valor;
+                      });
+
+                    },
+                   )
+                  ),
+                  Text("Motorista")
+                ],
+               )
+              ),
               Padding(padding: EdgeInsets.only(top: 10),
                child: TextButton(
                 onPressed: (){}, 
-                child: Text("Entrar", 
+                child: Text("Cadastrar", 
                   style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -85,28 +116,6 @@ class _nameState extends State<Home> {
                 ),
                ),
               ),
-              Padding(padding: EdgeInsets.only(top: 15),
-               child: Center(
-                child:  GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => Cadastro()));
-                  },
-                  child: Text("Não tem conta? cadastra-se!",
-                              style: TextStyle(
-                                color: Colors.white
-                              )),
-                ),
-               )
-              ),
-              Padding(padding: EdgeInsets.only(top: 15, bottom: 15),
-                  child: Center(
-                    child: Text("ERRO!",
-                     style: TextStyle(
-                      color: Colors.red
-                     )
-                   )
-                  )
-                )
              ],
             ),
           )

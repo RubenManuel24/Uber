@@ -62,7 +62,8 @@ class _CadastroState extends State<Cadastro> {
               ),
               Padding(padding: EdgeInsets.only(top: 3),
                child: TextField(
-                controller: _controllerNome,
+                controller: _controllerSenha,
+                obscureText: true,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
                   hintText: "Senha",

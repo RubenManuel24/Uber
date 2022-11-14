@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uber/rotas.dart';
 import 'package:uber/tela/cadastro.dart';
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -89,7 +90,7 @@ class _nameState extends State<Home> {
                child: Center(
                 child:  GestureDetector(
                   onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => Cadastro()));
+                    Navigator.pushNamed(context, Rotas.ROUTE_CADASTRO);
                   },
                   child: Text("Não tem conta? cadastra-se!",
                               style: TextStyle(

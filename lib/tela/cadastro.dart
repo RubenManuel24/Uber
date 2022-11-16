@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:uber/rotas.dart';
+import 'package:uber/usuario.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Cadastro extends StatefulWidget {
   const Cadastro({super.key});
@@ -8,12 +12,81 @@ class Cadastro extends StatefulWidget {
 }
 
 class _CadastroState extends State<Cadastro> {
+  FirebaseAuth auth = FirebaseAuth.instance;
+  FirebaseFirestore db = FirebaseFirestore.instance;
 
-  TextEditingController _controllerEmail = TextEditingController();
-  TextEditingController _controllerNome = TextEditingController();
-  TextEditingController _controllerSenha = TextEditingController();
-   
-   bool _escolhaSwitch = false;
+  var _tipoUsuario = false;
+  String _messagemError = "";
+
+ final TextEditingController _controllerNome = TextEditingController();
+ final TextEditingController _controllerEmail = TextEditingController();
+ final TextEditingController _controllerSenha = TextEditingController();
+  
+
+   void _validarCampo(){
+
+     String nome  =  _controllerNome.text;
+     String email =  _controllerEmail.text;
+     String senha =  _controllerSenha.text;
+
+     if(nome.isNotEmpty){
+        if(email.isNotEmpty && email.contains("@")){
+           if(senha.isNotEmpty && senha.length > 6){
+
+            Usuario usuario = Usuario();
+            usuario.setNome        = nome;
+            usuario.setEmail       = email;
+            usuario.setSenha       = senha;
+            usuario.setTipoUsuario = usuario.verificaTipoUsuario(_tipoUsuario);
+
+            _cadastrarUsuario(usuario);
+
+           }
+           else{
+            setState(() {
+               _messagemError = "Preencha a senha, tem que ter mais de 6 caracters!";
+             });
+             
+           }
+        }
+        else{
+           setState(() {
+             _messagemError = "Preencha o e-mail, tem que ter @.";
+          });
+        }
+    }
+    else{
+        setState(() {
+           _messagemError = "Preencha o nome, tem que ter mais de 5 caracters!";
+        });
+      }
+   }
+  
+
+   _cadastrarUsuario(Usuario usuario){
+    
+    auth.createUserWithEmailAndPassword(
+      email: usuario.getEmail, 
+      password: usuario.getSenha
+      ).then((firebaseUsuario) {
+
+        db.collection("usuario")
+         .doc(firebaseUsuario.user?.uid)
+         .set(usuario.toMap());
+
+         switch(usuario.getTipoUsuario){
+            case "Passageiro":
+              return Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_PASSAGEIRO, (route) => false);
+
+            case "Motorista":
+              return Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_MOTORISTA, (route) => false);
+         }
+
+      })
+      .catchError((error){
+        _messagemError = "Erro ao tentar se cadastrar, tenta verificar melhor os campos!";
+    });
+   }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +105,7 @@ class _CadastroState extends State<Cadastro> {
               Padding(padding: EdgeInsets.only(top: 5),
                child: TextField(
                 controller: _controllerNome,
-                keyboardType: TextInputType.emailAddress,
+                keyboardType: TextInputType.text,
                 autofocus: true,
                 decoration: InputDecoration(
                   hintText: "Nome",
@@ -83,11 +156,10 @@ class _CadastroState extends State<Cadastro> {
                   Padding(padding: EdgeInsets.only(left: 3, right:3),
                    child: Switch(
                     activeColor: Color(0xff37474f),
-                    value: _escolhaSwitch,
+                    value: _tipoUsuario,
                     onChanged: (valor){
-
                       setState(() {
-                         _escolhaSwitch = valor;
+                         _tipoUsuario = valor;
                       });
 
                     },
@@ -99,7 +171,7 @@ class _CadastroState extends State<Cadastro> {
               ),
               Padding(padding: EdgeInsets.only(top: 10),
                child: TextButton(
-                onPressed: (){}, 
+                onPressed: _validarCampo, 
                 child: Text("Cadastrar", 
                   style: TextStyle(
                   color: Colors.white,
@@ -117,6 +189,16 @@ class _CadastroState extends State<Cadastro> {
                 ),
                ),
               ),
+              Padding(padding: EdgeInsets.only(top: 15, bottom: 15),
+                  child: Center(
+                    child: Text(
+                        _messagemError,
+                     style: TextStyle(
+                      color: Colors.red
+                     )
+                   )
+                  )
+                )
              ],
             ),
           )

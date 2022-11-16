@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:uber/tela/cadastro.dart';
 import 'package:uber/tela/home.dart';
+import 'package:uber/tela/motorista.dart';
+import 'package:uber/tela/passageiro.dart';
 class Rotas{
 
   static const ROUTE_INICIAL = "/";
   static const ROUTE_CADASTRO = "/cadastro";
+  static const ROUTE_PASSAGEIRO = "/passageiro";
+  static const ROUTE_MOTORISTA = "/motorista";
 
 
   static Route<dynamic>? routasDefinida(RouteSettings routeSettings){
@@ -18,6 +22,16 @@ class Rotas{
       case ROUTE_CADASTRO:
         return MaterialPageRoute(
                 builder:  (_) => Cadastro()
+              );
+
+      case ROUTE_PASSAGEIRO:
+        return MaterialPageRoute(
+                builder:  (_) => Passageiro()
+              );
+
+     case ROUTE_MOTORISTA:
+        return MaterialPageRoute(
+                builder:  (_) => Motorista()
               );
 
       default: {

@@ -82,7 +82,7 @@ _movimentarCamera(CameraPosition position) async {
             if(position != null){
               _cameraPosition = CameraPosition(
                    target: LatLng(position.latitude, position.longitude),
-                   zoom: 19, 
+                   zoom: 15, 
               );
            }
            _movimentarCamera(_cameraPosition);
@@ -98,7 +98,7 @@ _movimentarCamera(CameraPosition position) async {
         
         _cameraPosition = CameraPosition(
            target: LatLng(position.latitude, position.longitude),
-           zoom: 20,
+           zoom: 16,
            tilt: 0
         );
           _movimentarCamera(_cameraPosition);
@@ -132,13 +132,105 @@ _movimentarCamera(CameraPosition position) async {
             })
         ],
       ),
-      body: Container(
-        child: GoogleMap(
-           mapType: MapType.hybrid,
-           onMapCreated: _onMapCreated,
-           initialCameraPosition: _cameraPosition,
-           myLocationEnabled: true,
-        )
+      body: Stack(
+       children: [
+           GoogleMap(
+              mapType: MapType.hybrid,
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: _cameraPosition,
+              myLocationEnabled: true,
+              rotateGesturesEnabled: false,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              buildingsEnabled: false
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: EdgeInsets.all(10),
+                child: Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(3),
+                    color: Colors.white
+                  ),
+                  child: TextField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      icon: Container(
+                        margin: EdgeInsets.only(left: 10, bottom: 10),
+                        width: 10,
+                        height: 10,
+                        child: Icon(Icons.location_on, color: Color.fromARGB(255, 252, 8, 8),),
+                      ),
+                      hintText: "Meu local",
+                      contentPadding: EdgeInsets.only(left: 10),
+                      border: InputBorder.none
+                    ),
+                  ),
+                 ),
+              )
+           ),
+           Positioned(
+            top: 55,
+            left:0,
+            right: 0,
+            child: Padding(padding: EdgeInsets.all(10),
+              child: Container(
+                height: 50,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(3)
+                ),
+                child: TextField(
+                    decoration: InputDecoration(
+                    icon: Container(
+                      margin: EdgeInsets.only(left: 10, bottom: 10),
+                      width: 10,
+                      height: 10,
+                      child: Icon(Icons.local_taxi, color: Colors.black),
+                    ),
+                    hintText: "Digite o destino",
+                    contentPadding: EdgeInsets.only(left: 10),
+                    border: InputBorder.none
+                   ),
+                ),
+              )
+            )),
+            Positioned(
+              bottom:0,
+              left: 0,
+              right: 0,
+              child: Padding(padding: EdgeInsets.all(10),
+               child: Padding(padding: EdgeInsets.only(top: 10),
+               child: TextButton(
+                onPressed: (){}, 
+                child: Text("Chamar Uber", 
+                  style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      Color(0xff1ebbd8)
+                  ),
+                  padding: MaterialStateProperty.all<EdgeInsets>(
+                      EdgeInsets.fromLTRB(32, 16, 32, 16)
+                 )
+               ),
+             ),
+            ),
+              ) 
+          )
+       ],
       )
     );
   }

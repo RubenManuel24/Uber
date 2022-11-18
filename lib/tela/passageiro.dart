@@ -19,6 +19,8 @@ final Completer <GoogleMapController> _controller = Completer();
 CameraPosition _cameraPosition = CameraPosition(
            target: LatLng(-8.85080, 13.21359),
            zoom: 20,);
+Set<Marker> _marcador = {};
+
 
 _onMapCreated(GoogleMapController googleMapController){
   _controller.complete(googleMapController);
@@ -78,8 +80,12 @@ _movimentarCamera(CameraPosition position) async {
 
      //buscar a ultima posicao do despositio(usuario)
      Position? position = await Geolocator.getLastKnownPosition(forceAndroidLocationManager:true);
+
        setState((){
             if(position != null){
+              
+              _exibirMarcadorUsuario(position);
+
               _cameraPosition = CameraPosition(
                    target: LatLng(position.latitude, position.longitude),
                    zoom: 15, 
@@ -95,6 +101,8 @@ _movimentarCamera(CameraPosition position) async {
     );
      StreamSubscription<Position> positionStream = Geolocator.getPositionStream(locationSettings: locationSettings)
        .listen((Position position) { 
+
+       _exibirMarcadorUsuario(position);
         
         _cameraPosition = CameraPosition(
            target: LatLng(position.latitude, position.longitude),
@@ -105,6 +113,28 @@ _movimentarCamera(CameraPosition position) async {
        });
  
   }
+}
+
+_exibirMarcadorUsuario(Position position) async {
+
+  double pixel = MediaQuery.of(context).devicePixelRatio;
+  BitmapDescriptor.fromAssetImage(
+    ImageConfiguration(devicePixelRatio: pixel),
+    "imagens/passageiro.png" )
+    .then((BitmapDescriptor bitmapDescriptor){
+
+     Marker marker = Marker(
+    markerId: MarkerId("Lugar-Usuario"),
+    position: LatLng(position.latitude, position.longitude),
+    infoWindow: InfoWindow(title: "Meu local"),
+    icon: bitmapDescriptor,
+    );
+     
+     setState(() {
+       _marcador.add(marker);
+     });
+
+    });
 }
 
 
@@ -138,11 +168,12 @@ _movimentarCamera(CameraPosition position) async {
               mapType: MapType.hybrid,
               onMapCreated: _onMapCreated,
               initialCameraPosition: _cameraPosition,
-              myLocationEnabled: true,
+              //myLocationEnabled: true,
               rotateGesturesEnabled: false,
               myLocationButtonEnabled: false,
               zoomControlsEnabled: false,
-              buildingsEnabled: false
+              buildingsEnabled: false,
+              markers: _marcador,
           ),
           Positioned(
             top: 0,

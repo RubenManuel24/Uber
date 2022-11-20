@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uber/destino.dart';
 import 'package:uber/rotas.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class Passageiro extends StatefulWidget {
   const Passageiro({super.key});
@@ -14,13 +16,13 @@ class Passageiro extends StatefulWidget {
 }
 
 class _PassageiroState extends State<Passageiro> {
+TextEditingController _controllerDestino = TextEditingController();
 FirebaseAuth auth = FirebaseAuth.instance;
 final Completer <GoogleMapController> _controller = Completer();
 CameraPosition _cameraPosition = CameraPosition(
            target: LatLng(-8.85080, 13.21359),
            zoom: 20,);
 Set<Marker> _marcador = {};
-
 
 _onMapCreated(GoogleMapController googleMapController){
   _controller.complete(googleMapController);
@@ -137,6 +139,93 @@ _exibirMarcadorUsuario(Position position) async {
     });
 }
 
+_chamarUber() async {
+
+  String? enderecoDestinado = _controllerDestino.text;
+
+  if(enderecoDestinado.isNotEmpty){
+
+    List<Location> listaEndereco = await locationFromAddress(enderecoDestinado);
+
+       if( listaEndereco != null && listaEndereco.isNotEmpty){
+          
+          Location firstLocation = listaEndereco.first;
+
+          List<Placemark> places = await placemarkFromCoordinates(
+            firstLocation.latitude, 
+            firstLocation.longitude
+          );
+
+           if(places != null && places.isNotEmpty){
+               
+               Placemark endereco = places[0];
+               
+               Destino destino = Destino();
+               destino.setCidade    = endereco.administrativeArea;
+               destino.setCep       = endereco.postalCode;
+               destino.setBairro    = endereco.subLocality;
+               destino.setRua       = endereco.thoroughfare;
+               destino.setNumero    = endereco.subThoroughfare;
+
+               destino.setLatitude  = firstLocation.latitude;
+               destino.setLongitude = firstLocation.longitude;
+                
+                String dados = "\n Cidade: "+destino.getCidade;
+                       dados += "\n Rua: "+destino.getRua + ", "+ destino.getNumero;
+                       dados += "\n Bairro: "+destino.getBairro;
+                       dados += "\n Cep: "+destino.getCep;
+          
+
+               showDialog(
+                context: context, 
+                builder: (context){
+                   return AlertDialog(
+                    title: Text("Configuração de endereço"),
+                    contentPadding: EdgeInsets.all(16),
+                    content: Text(dados),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context), 
+                        child: Text("Cancelar", style: TextStyle(color: Colors.red),)
+                        ),
+                      TextButton(
+                        onPressed: (){
+                          //_salvarDestino()
+                          Navigator.pop(context);
+                        }, 
+                        child: Text("Confirmar", style: TextStyle(color: Colors.green),)
+                        )
+                    ],
+
+                   );
+                });
+              
+           }
+       }
+       else{
+
+        showDialog(
+          context: context, 
+          builder: (context){
+            return AlertDialog(
+                title: Text("Endereço não encontrado!"),
+                contentPadding: EdgeInsets.all(16),
+                   );
+            });
+       }
+  }
+  else{
+        showDialog(
+          context: context, 
+          builder: (context){
+            return AlertDialog(
+                title: Text("Digite um destino!"),
+                contentPadding: EdgeInsets.all(16),
+                   );
+                });
+           }
+}
+
 
 @override
   void initState() {
@@ -220,6 +309,7 @@ _exibirMarcadorUsuario(Position position) async {
                   borderRadius: BorderRadius.circular(3)
                 ),
                 child: TextField(
+                    controller: _controllerDestino,
                     decoration: InputDecoration(
                     icon: Container(
                       margin: EdgeInsets.only(left: 10, bottom: 10),
@@ -241,7 +331,7 @@ _exibirMarcadorUsuario(Position position) async {
               child: Padding(padding: EdgeInsets.all(10),
                child: Padding(padding: EdgeInsets.only(top: 10),
                child: TextButton(
-                onPressed: (){}, 
+                onPressed:() => _chamarUber(), 
                 child: Text("Chamar Uber", 
                   style: TextStyle(
                   color: Colors.white,

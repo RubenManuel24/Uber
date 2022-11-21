@@ -41,13 +41,13 @@ class Destino {
     this._cep = cep;
   }
 
- String get getLatitude => this._latitude;
+ double get getLatitude => this._latitude;
 
   set setLatitude(double? latitude){
     this._latitude = latitude;
   }
 
- String get getLongitude => this._longitude;
+ double get getLongitude => this._longitude;
 
   set setLongitude(double? longitude){
     this._longitude = longitude;

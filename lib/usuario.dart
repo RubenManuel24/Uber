@@ -3,6 +3,7 @@ class Usuario{
 var _nome;
 var _email;
 var _senha;
+var _idUsuario;
 var _tipoUsuario;
 
 Usuario();
@@ -27,6 +28,12 @@ String get getSenha => this._senha;
 
 set setSenha(String senha){
   this._senha = senha;
+}
+
+String get getIdUsuario => this._idUsuario;
+
+set setIdUsuario(String idUsuario){
+  this._idUsuario = idUsuario;
 }
 
 String get getTipoUsuario => this._tipoUsuario;

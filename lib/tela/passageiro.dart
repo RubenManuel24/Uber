@@ -2,11 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uber/Util/status_requisicao.dart';
+import 'package:uber/Util/usuario_fire_base.dart';
 import 'package:uber/destino.dart';
+import 'package:uber/model/requisicao.dart';
 import 'package:uber/rotas.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:uber/usuario.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Passageiro extends StatefulWidget {
   const Passageiro({super.key});
@@ -190,7 +195,7 @@ _chamarUber() async {
                         ),
                       TextButton(
                         onPressed: (){
-                          //_salvarDestino()
+                          _salvarRequisicao(destino);
                           Navigator.pop(context);
                         }, 
                         child: Text("Confirmar", style: TextStyle(color: Colors.green),)
@@ -198,8 +203,8 @@ _chamarUber() async {
                     ],
 
                    );
-                });
-              
+                 }
+              );
            }
        }
        else{
@@ -226,6 +231,36 @@ _chamarUber() async {
            }
 }
 
+ //salvar requisicao
+ _salvarRequisicao(Destino destino) async {
+
+  /*
+
+  + REQUISICAO
+    + ID_REQUISICAO
+      + destino (rua, endereco, latitude...)
+      + passageiro (nome, email...)
+      + motorista (nome, email...)
+      + status (aguardando, a_caminho...finalizada)
+      +
+  
+   */
+
+
+  Usuario passageiro = await UsuarioFireBase.getDadosUsuarioLogadoAtual();
+
+ Requisicao requisicao = Requisicao();
+ requisicao.setDestino    = destino;
+ requisicao.setpassageiro = passageiro;
+ requisicao.setStatus     = StatusRequisicao.AGUARDANDO;
+
+ 
+FirebaseFirestore db = FirebaseFirestore.instance;
+  db.collection("requisicoes")
+  .add(requisicao.toMap());
+
+
+}
 
 @override
   void initState() {

@@ -4,7 +4,7 @@ import 'package:uber/usuario.dart';
 
 class UsuarioFireBase {
 
-  static Future<User?> getUsuarioAtual() async {
+   static Future<User?> getUsuarioAtual() async {
    FirebaseAuth auth = FirebaseAuth.instance;
    return await auth.currentUser;
 

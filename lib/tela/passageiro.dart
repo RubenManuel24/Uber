@@ -21,6 +21,10 @@ class Passageiro extends StatefulWidget {
 }
 
 class _PassageiroState extends State<Passageiro> {
+bool _exibirCaixaTextoEnderecoDestino = true;
+String _nomeButton = "Chamar Uber";
+Color _corButton   = Color(0xff1ebbd8);
+var _functionChamarUber;
 TextEditingController _controllerDestino = TextEditingController();
 FirebaseAuth auth = FirebaseAuth.instance;
 final Completer <GoogleMapController> _controller = Completer();
@@ -228,7 +232,7 @@ _chamarUber() async {
                 contentPadding: EdgeInsets.all(16),
                    );
                 });
-           }
+           }  
 }
 
  //salvar requisicao
@@ -242,23 +246,49 @@ _chamarUber() async {
       + passageiro (nome, email...)
       + motorista (nome, email...)
       + status (aguardando, a_caminho...finalizada)
-      +
   
    */
 
 
-  Usuario passageiro = await UsuarioFireBase.getDadosUsuarioLogadoAtual();
+Usuario passageiro = await UsuarioFireBase.getDadosUsuarioLogadoAtual();
 
  Requisicao requisicao = Requisicao();
  requisicao.setDestino    = destino;
  requisicao.setpassageiro = passageiro;
  requisicao.setStatus     = StatusRequisicao.AGUARDANDO;
 
- 
 FirebaseFirestore db = FirebaseFirestore.instance;
   db.collection("requisicoes")
   .add(requisicao.toMap());
 
+  _chamarUberCancelado();
+
+}
+
+_statusButaoChamarUber(String nomeButao, Color corButao, var funcaoChamarUber){
+  setState((){
+      _nomeButton = nomeButao;
+      _corButton  = corButao;
+      _functionChamarUber = funcaoChamarUber;
+  });
+ 
+}
+
+_statusUberNaoChamado(){
+   _exibirCaixaTextoEnderecoDestino = true;
+   _statusButaoChamarUber(
+    "Chamar Uber", 
+    Color(0xff1ebbd8),  
+    (){ _chamarUber();}
+    );
+}
+
+_chamarUberCancelado(){
+ _exibirCaixaTextoEnderecoDestino = false;
+ _statusButaoChamarUber("Cancelar", Colors.red, _cancelarUber());
+}
+
+_cancelarUber(){
 
 }
 
@@ -266,6 +296,7 @@ FirebaseFirestore db = FirebaseFirestore.instance;
   void initState() {
     super.initState();
     _localizarUsuarioAtual();
+    _statusUberNaoChamado();
   }
 
   @override
@@ -299,66 +330,74 @@ FirebaseFirestore db = FirebaseFirestore.instance;
               buildingsEnabled: false,
               markers: _marcador,
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Padding(
-              padding: EdgeInsets.all(10),
-                child: Container(
-                  width: double.infinity,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(3),
-                    color: Colors.white
+           Visibility(
+            visible: _exibirCaixaTextoEnderecoDestino,
+            child: Stack(
+              children: [
+                Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                        child: Container(
+                          width: double.infinity,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(3),
+                            color: Colors.white
+                          ),
+                          child: TextField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              icon: Container(
+                                margin: EdgeInsets.only(left: 10, bottom: 10),
+                                width: 10,
+                                height: 10,
+                                child: Icon(Icons.location_on, color: Color.fromARGB(255, 252, 8, 8),),
+                              ),
+                              hintText: "Meu local",
+                              contentPadding: EdgeInsets.only(left: 10),
+                              border: InputBorder.none
+                            ),
+                          ),
+                        ),
+                      )
                   ),
-                  child: TextField(
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      icon: Container(
-                        margin: EdgeInsets.only(left: 10, bottom: 10),
-                        width: 10,
-                        height: 10,
-                        child: Icon(Icons.location_on, color: Color.fromARGB(255, 252, 8, 8),),
+                  Positioned(
+                      top: 55,
+                      left:0,
+                      right: 0,
+                      child: Padding(padding: EdgeInsets.all(10),
+                        child: Container(
+                          height: 50,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(3)
+                          ),
+                            child: TextField(
+                              controller: _controllerDestino,
+                              decoration: InputDecoration(
+                              icon: Container(
+                                margin: EdgeInsets.only(left: 10, bottom: 10),
+                                width: 10,
+                                height: 10,
+                                child: Icon(Icons.local_taxi, color: Colors.black),
+                              ),
+                              hintText: "Digite o destino",
+                              contentPadding: EdgeInsets.only(left: 10),
+                              border: InputBorder.none
+                            ),
+                          ),
+                        )
+                      )
                       ),
-                      hintText: "Meu local",
-                      contentPadding: EdgeInsets.only(left: 10),
-                      border: InputBorder.none
-                    ),
-                  ),
-                 ),
-              )
-           ),
-           Positioned(
-            top: 55,
-            left:0,
-            right: 0,
-            child: Padding(padding: EdgeInsets.all(10),
-              child: Container(
-                height: 50,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(3)
-                ),
-                child: TextField(
-                    controller: _controllerDestino,
-                    decoration: InputDecoration(
-                    icon: Container(
-                      margin: EdgeInsets.only(left: 10, bottom: 10),
-                      width: 10,
-                      height: 10,
-                      child: Icon(Icons.local_taxi, color: Colors.black),
-                    ),
-                    hintText: "Digite o destino",
-                    contentPadding: EdgeInsets.only(left: 10),
-                    border: InputBorder.none
-                   ),
-                ),
-              )
+                 ],
             )),
+
             Positioned(
               bottom:0,
               left: 0,
@@ -366,8 +405,8 @@ FirebaseFirestore db = FirebaseFirestore.instance;
               child: Padding(padding: EdgeInsets.all(10),
                child: Padding(padding: EdgeInsets.only(top: 10),
                child: TextButton(
-                onPressed:() => _chamarUber(), 
-                child: Text("Chamar Uber", 
+                onPressed: _functionChamarUber,
+                child: Text(_nomeButton, 
                   style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -376,7 +415,7 @@ FirebaseFirestore db = FirebaseFirestore.instance;
                 ),
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all<Color>(
-                      Color(0xff1ebbd8)
+                      _corButton
                   ),
                   padding: MaterialStateProperty.all<EdgeInsets>(
                       EdgeInsets.fromLTRB(32, 16, 32, 16)

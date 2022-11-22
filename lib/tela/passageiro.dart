@@ -258,10 +258,21 @@ Usuario passageiro = await UsuarioFireBase.getDadosUsuarioLogadoAtual();
  requisicao.setStatus     = StatusRequisicao.AGUARDANDO;
 
 FirebaseFirestore db = FirebaseFirestore.instance;
+//Salvar requisicao
   db.collection("requisicoes")
-  .add(requisicao.toMap());
+  .doc(requisicao.getId)
+  .set(requisicao.toMap());
+  
+//Salvar requisicao ativa
+Map<String, dynamic> dadosRequisicaoAtiva = {};
+dadosRequisicaoAtiva["id_requisicao"] = requisicao.getId;
+dadosRequisicaoAtiva["id_usuario"] = passageiro.getIdUsuario;
+dadosRequisicaoAtiva["status"] = StatusRequisicao.AGUARDANDO;
 
-  _chamarUberCancelado();
+  db.collection("requisicao_ativa")
+   .doc(passageiro.getIdUsuario)
+   .set(dadosRequisicaoAtiva);
+
 
 }
 
@@ -283,7 +294,7 @@ _statusUberNaoChamado(){
     );
 }
 
-_chamarUberCancelado(){
+_statusAguardando(){
  _exibirCaixaTextoEnderecoDestino = false;
  _statusButaoChamarUber("Cancelar", Colors.red, _cancelarUber());
 }
@@ -292,11 +303,76 @@ _cancelarUber(){
 
 }
 
+_adicionarListernerRequisicaoAtiva() async {
+
+  User? firebaseUser = await UsuarioFireBase.getUsuarioAtual();
+  FirebaseFirestore db = FirebaseFirestore.instance;
+  db.collection("requisicao_ativa")
+    .doc(firebaseUser!.uid)
+    .snapshots()
+    .listen((snapshot) {
+
+ // print("Dados recuperados: " + snapshot.data().toString());
+
+   /*
+     Caso tenha uma requisicao ativa
+       -> altera interface de acordo com status
+     Caso não tenha
+       -> exibe interface padraão para chamar uber
+   */
+                               
+   if(snapshot.data() != null){
+      
+      Map<String, dynamic>? dados = snapshot.data();
+      String status = dados!["status"];
+      String idRequisicao = dados["id_requisicao"];
+
+      switch(status){
+
+        case StatusRequisicao.AGUARDANDO :
+
+          _statusAguardando();
+
+         break;
+
+        case StatusRequisicao.A_CAMINHO :
+
+         break;
+
+        case StatusRequisicao.VIAGEM :
+         
+         break;
+
+        case StatusRequisicao.FINALIZADA :
+         
+         break;
+        
+        case StatusRequisicao.CANCELADA :
+
+         break;
+
+      }
+
+    
+   }
+   else{
+     _statusUberNaoChamado();
+   }
+
+ });
+
+   
+
+}
+
 @override
   void initState() {
     super.initState();
     _localizarUsuarioAtual();
-    _statusUberNaoChamado();
+    
+    //adicionar Listener para requisiccao ativa
+    _adicionarListernerRequisicaoAtiva();
+     
   }
 
   @override

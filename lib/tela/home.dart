@@ -90,7 +90,7 @@ class _HomeState extends State<Home> {
                                      .get();
       
      Map<String, dynamic>? map = snapshot.data();
-     String tipo = map!["tipo"];
+     String tipo = map?["tipo"];
 
      setState(() {
          _carregando = false;

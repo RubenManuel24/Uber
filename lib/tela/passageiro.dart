@@ -25,6 +25,7 @@ bool _exibirCaixaTextoEnderecoDestino = true;
 String _nomeButton = "Chamar Uber";
 Color _corButton   = Color(0xff1ebbd8);
 var _functionChamarUber;
+var _idRequisicao;
 TextEditingController _controllerDestino = TextEditingController();
 FirebaseAuth auth = FirebaseAuth.instance;
 final Completer <GoogleMapController> _controller = Completer();
@@ -147,10 +148,9 @@ _exibirMarcadorUsuario(Position position) async {
 
     });
 }
+Future<dynamic> _chamarUber() async {
 
-_chamarUber() async {
-
-  String? enderecoDestinado = _controllerDestino.text;
+  var enderecoDestinado = _controllerDestino.text;
 
   if(enderecoDestinado.isNotEmpty){
 
@@ -233,10 +233,11 @@ _chamarUber() async {
                    );
                 });
            }  
+      _controllerDestino.text = "";
 }
 
  //salvar requisicao
- _salvarRequisicao(Destino destino) async {
+ Future _salvarRequisicao(Destino destino) async {
 
   /*
 
@@ -273,10 +274,11 @@ dadosRequisicaoAtiva["status"] = StatusRequisicao.AGUARDANDO;
    .doc(passageiro.getIdUsuario)
    .set(dadosRequisicaoAtiva);
 
+   _statusAguardando();
 
 }
 
-_statusButaoChamarUber(String nomeButao, Color corButao, var funcaoChamarUber){
+_statusButaoChamarUber (String nomeButao, Color corButao, Function funcaoChamarUber){
   setState((){
       _nomeButton = nomeButao;
       _corButton  = corButao;
@@ -290,16 +292,32 @@ _statusUberNaoChamado(){
    _statusButaoChamarUber(
     "Chamar Uber", 
     Color(0xff1ebbd8),  
-    (){ _chamarUber();}
+    (){  _chamarUber();}
     );
 }
 
 _statusAguardando(){
  _exibirCaixaTextoEnderecoDestino = false;
- _statusButaoChamarUber("Cancelar", Colors.red, _cancelarUber());
+ _statusButaoChamarUber("Cancelar", Colors.red,(){_cancelarUber();} );
 }
 
-_cancelarUber(){
+_cancelarUber() async {
+
+  User? firebaseUser = await UsuarioFireBase.getUsuarioAtual();
+  FirebaseFirestore db = FirebaseFirestore.instance;
+
+  db.collection("requisicoes")
+    .doc(_idRequisicao)
+    .update({
+       "status" : StatusRequisicao.CANCELADA 
+    }).then((value){
+
+   FirebaseFirestore db = FirebaseFirestore.instance;
+   db.collection("requisicao_ativa")
+    .doc(firebaseUser!.uid)
+    .delete();
+
+    });
 
 }
 
@@ -325,7 +343,7 @@ _adicionarListernerRequisicaoAtiva() async {
       
       Map<String, dynamic>? dados = snapshot.data();
       String status = dados!["status"];
-      String idRequisicao = dados["id_requisicao"];
+      _idRequisicao = dados["id_requisicao"];
 
       switch(status){
 
@@ -360,8 +378,6 @@ _adicionarListernerRequisicaoAtiva() async {
    }
 
  });
-
-   
 
 }
 
@@ -481,7 +497,7 @@ _adicionarListernerRequisicaoAtiva() async {
               child: Padding(padding: EdgeInsets.all(10),
                child: Padding(padding: EdgeInsets.only(top: 10),
                child: TextButton(
-                onPressed: _functionChamarUber,
+                onPressed:  _functionChamarUber,
                 child: Text(_nomeButton, 
                   style: TextStyle(
                   color: Colors.white,

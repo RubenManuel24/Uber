@@ -124,26 +124,31 @@ List<String> listaItem = [
                     List<DocumentSnapshot> querisicoes = querySnapshot.docs.toList();
                     DocumentSnapshot dados = querisicoes[index];
 
+                      String idRequisicao = dados["id"];
                       String nomePassageiro = dados["passageiro"]["nome"];
                       String cidade = dados["destino"]["cidade"];
                       String bairro = dados["destino"]["bairro"];
                       //String rua = dados["destino"]["rua"];
                       //String numero = dados["destino"]["numero"];
 
-                    return ListTile(
-                      title: Text("Passagerio: $nomePassageiro"),
+                     return ListTile(
+                      onTap: (){
+                        Navigator.pushReplacementNamed(
+                          context, 
+                          Rotas.ROUTE_CORRIDA,
+                          arguments: idRequisicao
+                          );
+                      },
+                      title: Text("Passageiro: $nomePassageiro"),
                       subtitle: Text("Cidade: $cidade, Bairro: $bairro"),
                     );
-
                   }, 
-                  );
+                );
                }
              }
-
-          }
-
-        },
-        )
+           }
+         },
+      )
     );
   }
 }

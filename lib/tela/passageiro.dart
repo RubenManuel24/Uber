@@ -136,7 +136,7 @@ _exibirMarcadorUsuario(Position position) async {
     .then((BitmapDescriptor bitmapDescriptor){
 
      Marker marker = Marker(
-    markerId: MarkerId("Lugar-Usuario"),
+    markerId: MarkerId("Lugar-Passageiro"),
     position: LatLng(position.latitude, position.longitude),
     infoWindow: InfoWindow(title: "Meu local"),
     icon: bitmapDescriptor,

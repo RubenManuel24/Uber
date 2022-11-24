@@ -133,7 +133,7 @@ List<String> listaItem = [
 
                      return ListTile(
                       onTap: (){
-                        Navigator.pushReplacementNamed(
+                        Navigator.pushNamed(
                           context, 
                           Rotas.ROUTE_CORRIDA,
                           arguments: idRequisicao

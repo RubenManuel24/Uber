@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:uber/usuario.dart';
+import 'package:uber/model/usuario.dart';
 
 class UsuarioFireBase {
 

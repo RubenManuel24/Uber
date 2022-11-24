@@ -6,6 +6,9 @@ var _senha;
 var _idUsuario;
 var _tipoUsuario;
 
+var _latitude;
+var _longitude;
+
 Usuario();
 
 String verificaTipoUsuario(bool condicao){
@@ -42,12 +45,26 @@ set setTipoUsuario(String tipoUsuario){
   this._tipoUsuario = tipoUsuario;
 }
 
+double get getLatitude => this._latitude;
+
+set setLatitude(double latitude){
+  this._latitude = latitude;
+}
+
+double get getLongitude => this._longitude;
+
+set setLongitude(double longitude){
+  this._longitude = longitude;
+}
+
 Map<String, dynamic> toMap(){
 
   Map<String, dynamic> map = {
     "nome"  : this._nome,
     "email" : this._email,
-    "tipo"  : this._tipoUsuario
+    "tipo"  : this._tipoUsuario, 
+    "latitude"  : this._latitude, 
+    "longitude"  : this._longitude, 
   };
 
   return map;

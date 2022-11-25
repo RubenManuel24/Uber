@@ -33,6 +33,7 @@ CameraPosition _cameraPosition = CameraPosition(
            target: LatLng(-8.85080, 13.21359),
            zoom: 20,);
 Set<Marker> _marcador = {};
+Position? _localpassageiro;
 
 _onMapCreated(GoogleMapController googleMapController){
   _controller.complete(googleMapController);
@@ -103,6 +104,7 @@ _movimentarCamera(CameraPosition position) async {
                    zoom: 15, 
               );
            }
+           _localpassageiro = position;
            _movimentarCamera(_cameraPosition);
      });
 
@@ -121,6 +123,7 @@ _movimentarCamera(CameraPosition position) async {
            zoom: 16,
            tilt: 0
         );
+         _localpassageiro = position;
           _movimentarCamera(_cameraPosition);
        });
  
@@ -249,9 +252,9 @@ Future<dynamic> _chamarUber() async {
       + status (aguardando, a_caminho...finalizada)
   
    */
-
-
 Usuario passageiro = await UsuarioFireBase.getDadosUsuarioLogadoAtual();
+passageiro.setLatitude = _localpassageiro!.latitude;
+passageiro.setLongitude = _localpassageiro!.longitude;
 
  Requisicao requisicao = Requisicao();
  requisicao.setDestino    = destino;

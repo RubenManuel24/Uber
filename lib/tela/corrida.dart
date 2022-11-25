@@ -27,7 +27,7 @@ class _CorridaState extends State<Corrida> {
            zoom: 20,);
  Set<Marker> _marcador = {};
  Map<String, dynamic>? _dadosRequisicao = {};
- Position? _localMotorista;
+ late Position _localMotorista;
 
  _onMapCreated(GoogleMapController googleMapController){
   _controller.complete(googleMapController);
@@ -44,7 +44,7 @@ _movimentarCamera(CameraPosition position) async {
 
 }
 
-_exibirMarcadorUsuario(Position position) async {
+  _exibirMarcadorUsuario(Position position) async {
 
   double pixel = MediaQuery.of(context).devicePixelRatio;
   BitmapDescriptor.fromAssetImage(
@@ -55,7 +55,7 @@ _exibirMarcadorUsuario(Position position) async {
      Marker marker = Marker(
     markerId: MarkerId("Lugar-Motorista"),
     position: LatLng(position.latitude, position.longitude),
-    infoWindow: InfoWindow(title: "Meu local"),
+    infoWindow: InfoWindow(title: "Local Motorista"),
     icon: bitmapDescriptor,
     );
      
@@ -99,7 +99,7 @@ _statusButaoChamarUber (String nomeButao, Color corButao, Function funcaoAceitar
        setState((){
             if(position != null){
               
-              _exibirMarcadorUsuario(position);
+             _exibirMarcadorUsuario(position);
 
               _cameraPosition = CameraPosition(
                    target: LatLng(position.latitude, position.longitude),
@@ -109,7 +109,7 @@ _statusButaoChamarUber (String nomeButao, Color corButao, Function funcaoAceitar
              _movimentarCamera(_cameraPosition);
      });
 
-     //criar um ouvinte para a nossa localizacao
+      //criar um ouvinte para a nossa localizacao
     LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.best,
       distanceFilter: 10,
@@ -117,7 +117,7 @@ _statusButaoChamarUber (String nomeButao, Color corButao, Function funcaoAceitar
      StreamSubscription<Position> positionStream = Geolocator.getPositionStream(locationSettings: locationSettings)
        .listen((Position position) { 
 
-       _exibirMarcadorUsuario(position);
+        _exibirMarcadorUsuario(position);
         
         _cameraPosition = CameraPosition(
            target: LatLng(position.latitude, position.longitude),
@@ -200,6 +200,7 @@ _statusAguardando(){
     Color(0xff1ebbd8),  
     (){  _aceitarCorrida();}
     );
+    
 }
 
 _statusACaminho(){
@@ -208,14 +209,75 @@ _statusACaminho(){
     Colors.blueGrey.shade200,  
     (){ null;}
     );
+    
+    double latitudaPassageiro = _dadosRequisicao!["passageiro"]["latitude"];
+    double longitudePassageiro = _dadosRequisicao!["passageiro"]["longitude"];
+
+    double latitudaMotorista = _dadosRequisicao!["motorista"]["latitude"];
+    double longitudeMotorista = _dadosRequisicao!["motorista"]["longitude"];
+
+    _exibirDoisMarcadores(
+      LatLng(latitudaPassageiro, longitudePassageiro), 
+      LatLng(latitudaMotorista, longitudeMotorista));
+}
+
+_exibirDoisMarcadores(LatLng latLngPassageiro, LatLng latLnMotorista){
+
+    Set<Marker> _listaMarcadores = {};
+
+   double pixel1 = MediaQuery.of(context).devicePixelRatio;
+   BitmapDescriptor.fromAssetImage(
+    ImageConfiguration(devicePixelRatio: pixel1),
+    "imagens/passageiro.png" )
+    .then((BitmapDescriptor bitmapDescriptor){
+
+     Marker markerPassageiro = Marker(
+    markerId: MarkerId("Lugar-Passageiro"),
+    position: LatLng(latLngPassageiro.latitude, latLngPassageiro.longitude),
+    infoWindow: InfoWindow(title: "Local Passageiro"),
+    icon: bitmapDescriptor,
+    );
+
+      _listaMarcadores.add(markerPassageiro);
+    
+    });
+
+
+   double pixel2 = MediaQuery.of(context).devicePixelRatio;
+   BitmapDescriptor.fromAssetImage(
+    ImageConfiguration(devicePixelRatio: pixel2),
+    "imagens/motorista.png" )
+    .then((BitmapDescriptor bitmapDescriptor){
+
+     Marker markerMotorista = Marker(
+    markerId: MarkerId("Lugar-Motorista"),
+    position: LatLng(latLnMotorista.latitude, latLnMotorista.longitude),
+    infoWindow: InfoWindow(title: "Local Motorista"),
+    icon: bitmapDescriptor,
+    );
+
+      _listaMarcadores.add(markerMotorista);
+    
+    });
+
+     setState(() {
+        _marcador = _listaMarcadores;
+        _movimentarCamera(
+          CameraPosition(
+            target: LatLng(latLnMotorista.latitude, latLnMotorista.longitude),
+             zoom: 18
+            )
+        );
+     });
+
 }
 
 _aceitarCorrida() async {
 
   //Recuperando dados do motorista
    Usuario motorista = await UsuarioFireBase.getDadosUsuarioLogadoAtual();
-   motorista.setLatitude = _localMotorista!.latitude!;
-   motorista.setLongitude = _localMotorista!.longitude;
+   motorista.setLatitude = _localMotorista.altitude;
+   motorista.setLongitude = _localMotorista.longitude;
 
   FirebaseFirestore db = FirebaseFirestore.instance;
   String idRequisicao = _dadosRequisicao!["id"];

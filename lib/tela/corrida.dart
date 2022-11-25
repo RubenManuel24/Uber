@@ -180,7 +180,7 @@ _adicionarListenerRequisicao() async {
 
         case StatusRequisicao.FINALIZADA :
          
-         break;git 
+         break;
         
         case StatusRequisicao.CANCELADA :
 
@@ -214,7 +214,7 @@ _aceitarCorrida() async {
 
   //Recuperando dados do motorista
    Usuario motorista = await UsuarioFireBase.getDadosUsuarioLogadoAtual();
-   motorista.setLatitude = _localMotorista!.latitude;
+   motorista.setLatitude = _localMotorista!.latitude!;
    motorista.setLongitude = _localMotorista!.longitude;
 
   FirebaseFirestore db = FirebaseFirestore.instance;

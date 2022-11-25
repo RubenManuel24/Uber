@@ -301,6 +301,13 @@ _statusAguardando(){
  _statusButaoChamarUber("Cancelar", Colors.red,(){_cancelarUber();} );
 }
 
+_statusAcaminho(){
+ _exibirCaixaTextoEnderecoDestino = false;
+ _statusButaoChamarUber("Motorista a caminho", 
+  Colors.grey,
+  (){null;} );
+}
+
 _cancelarUber() async {
 
   User? firebaseUser = await UsuarioFireBase.getUsuarioAtual();
@@ -354,7 +361,7 @@ _adicionarListernerRequisicaoAtiva() async {
          break;
 
         case StatusRequisicao.A_CAMINHO :
-
+          _statusAcaminho();
          break;
 
         case StatusRequisicao.VIAGEM :

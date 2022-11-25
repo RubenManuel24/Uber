@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uber/Util/status_requisicao.dart';
+import 'package:uber/Util/usuario_fire_base.dart';
 import 'package:uber/rotas.dart';
 
 class Motorista extends StatefulWidget {
@@ -59,12 +60,45 @@ List<String> listaItem = [
       });
   }
 
+ _recuperaRequisicaoAtivaMotorista() async {
+    
+    //Recupera dados do usuario logado
+    User? fireBaseUser = await UsuarioFireBase.getUsuarioAtual();
+
+    //Recupera requisicao ativa
+    var documentSnapshot = await db
+    .collection("requisicao_ativa_motorista")
+    .doc(fireBaseUser!.uid)
+    .get();
+
+    Map<String, dynamic>? dadosRequisicao = documentSnapshot.data();
+    if( dadosRequisicao == null){
+       _adicionarListernerRequisicoesMotorista();
+
+  }
+   else{
+         var id_Requesicao = dadosRequisicao["id_requisicao"];
+          Navigator.pushReplacementNamed(
+            context, 
+            Rotas.ROUTE_CORRIDA,
+            arguments: id_Requesicao
+         );  
+
+   }
+
+ }
+  
   @override
   void initState() {
     super.initState();
-    _adicionarListernerRequisicoesMotorista();
+   
+   /* 
+   Recupera requisicao ativa para verificar se motorista está
+   atendendo alguma requisicao e enviaele para tela de corrida
+   */
+     _recuperaRequisicaoAtivaMotorista();
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -110,7 +144,7 @@ List<String> listaItem = [
                   ),
                 );
                }
-               else{
+               else{ 
                  return ListView.separated(
                    itemCount: querySnapshot.docs.length,
                    separatorBuilder: (context, int){

@@ -21,13 +21,16 @@ class _CorridaState extends State<Corrida> {
   String _nomeButton = "Aceitar corrida";
   Color _corButton   = Color(0xff1ebbd8);
   var _functionAceitarCorrida;
+  String? _mensagemStatus = "";
+
+
   final Completer <GoogleMapController> _controller = Completer();
   CameraPosition _cameraPosition = CameraPosition(
            target: LatLng(-8.85080, 13.21359),
            zoom: 20,);
  Set<Marker> _marcador = {};
  Map<String, dynamic>? _dadosRequisicao = {};
- late Position _localMotorista;
+ //late Position _localMotorista;
 
  _onMapCreated(GoogleMapController googleMapController){
   _controller.complete(googleMapController);
@@ -42,18 +45,18 @@ _movimentarCamera(CameraPosition position) async {
   );
 }
 
-  _exibirMarcadorUsuario(Position position) async {
+  _exibirMarcadorUsuario(Position position, String icone, String infoWindow) async {
 
   double pixel = MediaQuery.of(context).devicePixelRatio;
   BitmapDescriptor.fromAssetImage(
     ImageConfiguration(devicePixelRatio: pixel),
-    "imagens/motorista.png" )
+    icone )
     .then((BitmapDescriptor bitmapDescriptor){
 
      Marker marker = Marker(
-    markerId: MarkerId("Lugar-Motorista"),
+    markerId: MarkerId(icone),
     position: LatLng(position.latitude, position.longitude),
-    infoWindow: InfoWindow(title: "Local Motorista"),
+    infoWindow: InfoWindow(title: infoWindow),
     icon: bitmapDescriptor,
     );
      
@@ -96,13 +99,16 @@ _statusButaoChamarUber (String nomeButao, Color corButao, Function funcaoAceitar
 
        setState((){
             if(position != null){
-              
-             _exibirMarcadorUsuario(position);
 
-              _cameraPosition = CameraPosition(
+              //Atualizar localizacao em tempo real do motorista
+
+              /* 
+             _exibirMarcadorUsuario(position);
+             _cameraPosition = CameraPosition(
                    target: LatLng(position.latitude, position.longitude),
                    zoom: 15, 
               );
+              */
            }
              //_movimentarCamera(_cameraPosition);
      });
@@ -115,18 +121,24 @@ _statusButaoChamarUber (String nomeButao, Color corButao, Function funcaoAceitar
      StreamSubscription<Position> positionStream = Geolocator.getPositionStream(locationSettings: locationSettings)
        .listen((Position position) { 
 
-        _exibirMarcadorUsuario(position);
+       // _exibirMarcadorUsuario(position);
+
+       if( position != null){
+         
+       }
         
         _cameraPosition = CameraPosition(
            target: LatLng(position.latitude, position.longitude),
            zoom: 16,
            tilt: 0
         );
+
+        /*
          // _movimentarCamera(_cameraPosition);
           setState((){
             _localMotorista = position;
           });
-          
+          */
        });
  
   }
@@ -141,7 +153,6 @@ _recuperarRequisicao() async {
     .doc(idRequisicao).get();
 
    _dadosRequisicao = documentSnapshot.data();
-   _adicionarListenerRequisicao();
 
 
 }
@@ -155,6 +166,8 @@ _adicionarListenerRequisicao() async {
 
      if( snapshot.data() != null){
 
+      _dadosRequisicao = snapshot.data();
+      
       Map<String, dynamic>? dados = snapshot.data();
       String status = dados!["status"];
 
@@ -199,13 +212,38 @@ _statusAguardando(){
     (){  _aceitarCorrida();}
     );
     
+    double mototristaLat = _dadosRequisicao!["motorista"]["latitude"];
+    double mototristaLong = _dadosRequisicao!["motorista"]["longitude"];
+
+    Position? position = Position(
+       latitude: mototristaLat, longitude: mototristaLong,
+      altitude: 0,
+      accuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+      timestamp: null,
+      heading: 0
+    );
+    _exibirMarcadorUsuario(
+      position,
+      "imagens/motorista.png",
+      "Motorista"
+      );
+
+    CameraPosition cameraPosition = CameraPosition(
+       target: LatLng(position.latitude, position.longitude),
+       zoom: 15, 
+      );
+      _movimentarCamera(cameraPosition);
 }
 
 _statusACaminho(){
+   _mensagemStatus = "A caminho do passageiro";
    _statusButaoChamarUber(
-    "A caminho do passageiro", 
-    Colors.blueGrey.shade200,  
-    (){ null;}
+    "Inciar Corrida", 
+    Color(0xff1ebbd8),  
+    (){ 
+      _iniCiarCorrida();}
     );
     
     double latitudaPassageiro = _dadosRequisicao!["passageiro"]["latitude"];
@@ -249,6 +287,10 @@ _statusACaminho(){
         southwest: LatLng(sLat, sLong), 
         )
     );
+}
+
+_iniCiarCorrida(){
+
 }
 
 //metodo para centralizar passageiro e motorista independentemente das suas posicoes.
@@ -317,8 +359,8 @@ _aceitarCorrida() async {
 
   //Recuperando dados do motorista
    Usuario motorista = await UsuarioFireBase.getDadosUsuarioLogadoAtual();
-   motorista.setLatitude = _localMotorista.altitude;
-   motorista.setLongitude = _localMotorista.longitude;
+   motorista.setLatitude = _dadosRequisicao!["motorista"]["latitude"];
+   motorista.setLongitude = _dadosRequisicao!["motorista"]["longitude"];
 
   FirebaseFirestore db = FirebaseFirestore.instance;
   String idRequisicao = _dadosRequisicao!["id"];
@@ -358,11 +400,11 @@ _aceitarCorrida() async {
 @override
   void initState() {
     super.initState();
+
+    // adicionar listener para mudancas na requisicao
+    _adicionarListenerRequisicao();
     _localizarUsuarioAtual();
 
-    //Recuperar requisicao e
-    // adicionar listener para mudanca de statu
-    _recuperarRequisicao();
   }
 
   @override
@@ -370,7 +412,7 @@ _aceitarCorrida() async {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xff37474f),
-        title: Text("Corrida"),
+        title: Text("Corrida - " + _mensagemStatus.toString()),
       ),
       body: Stack(
        children: [

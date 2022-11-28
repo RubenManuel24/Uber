@@ -331,27 +331,45 @@ _cancelarUber() async {
 
 }
 
-_adicionarListernerRequisicaoAtiva() async {
+_adicionarRequisicaoAtiva() async {
 
   User? firebaseUser = await UsuarioFireBase.getUsuarioAtual();
   FirebaseFirestore db = FirebaseFirestore.instance;
-  db.collection("requisicao_ativa")
+  var documentSnapshot = await db.collection("requisicao_ativa")
     .doc(firebaseUser!.uid)
-    .snapshots()
-    .listen((snapshot) {
+    .get();
 
- // print("Dados recuperados: " + snapshot.data().toString());
+    if(documentSnapshot.data() != null){
+      Map<String, dynamic >? dados = documentSnapshot.data();
+      _idRequisicao = dados!["id_requisicao"];
 
-   /*
+      _adicionarListenerRequisicao(_idRequisicao);
+
+    }
+    else{
+     _statusUberNaoChamado();
+   }
+
+}
+
+_adicionarListenerRequisicao(String idRequisicao) async {
+
+  FirebaseFirestore db = FirebaseFirestore.instance;
+  await db.collection("requisicoes")
+   .doc(idRequisicao)
+   .snapshots()
+   .listen((snapshots) {
+        
+        /*
      Caso tenha uma requisicao ativa
        -> altera interface de acordo com status
      Caso não tenha
        -> exibe interface padraão para chamar uber
    */
                                
-   if(snapshot.data() != null){
+   if(snapshots.data() != null){
       
-      Map<String, dynamic>? dados = snapshot.data();
+      Map<String, dynamic>? dados = snapshots.data();
       String status = dados!["status"];
       _idRequisicao = dados["id_requisicao"];
 
@@ -359,6 +377,7 @@ _adicionarListernerRequisicaoAtiva() async {
 
         case StatusRequisicao.AGUARDANDO :
 
+          
           _statusAguardando();
 
          break;
@@ -380,24 +399,20 @@ _adicionarListernerRequisicaoAtiva() async {
          break;
 
       }
-
-    
-   }
-   else{
-     _statusUberNaoChamado();
    }
 
- });
+    });
 
 }
 
 @override
   void initState() {
     super.initState();
-    _localizarUsuarioAtual();
-    
+
     //adicionar Listener para requisiccao ativa
-    _adicionarListernerRequisicaoAtiva();
+    _adicionarRequisicaoAtiva();
+     
+    _localizarUsuarioAtual();
      
   }
 

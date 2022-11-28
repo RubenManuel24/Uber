@@ -34,14 +34,12 @@ class _CorridaState extends State<Corrida> {
 }
 
 _movimentarCamera(CameraPosition position) async {
-
   GoogleMapController googleMapController = await _controller.future;
   googleMapController.animateCamera(
     CameraUpdate.newCameraPosition(
        position
     )
   );
-
 }
 
   _exibirMarcadorUsuario(Position position) async {
@@ -106,7 +104,7 @@ _statusButaoChamarUber (String nomeButao, Color corButao, Function funcaoAceitar
                    zoom: 15, 
               );
            }
-             _movimentarCamera(_cameraPosition);
+             //_movimentarCamera(_cameraPosition);
      });
 
       //criar um ouvinte para a nossa localizacao
@@ -124,7 +122,7 @@ _statusButaoChamarUber (String nomeButao, Color corButao, Function funcaoAceitar
            zoom: 16,
            tilt: 0
         );
-          _movimentarCamera(_cameraPosition);
+         // _movimentarCamera(_cameraPosition);
           setState((){
             _localMotorista = position;
           });
@@ -215,10 +213,53 @@ _statusACaminho(){
 
     double latitudaMotorista = _dadosRequisicao!["motorista"]["latitude"];
     double longitudeMotorista = _dadosRequisicao!["motorista"]["longitude"];
-
+    
+    //exibir dois marcadores
     _exibirDoisMarcadores(
       LatLng(latitudaPassageiro, longitudePassageiro), 
       LatLng(latitudaMotorista, longitudeMotorista));
+
+    //southwest.latitude <= northeast.latitude : tem que ser true
+    //southwest.longitude <= northeast.longitude : tem que ser true
+
+    var sLat, sLong, nLat, nLong;
+
+    if(latitudaPassageiro <= latitudaMotorista){
+      sLat = latitudaPassageiro;
+      nLat = latitudaMotorista;
+    }
+    else{
+      sLat = latitudaMotorista;
+      nLat = latitudaPassageiro;
+    }
+
+    if(longitudePassageiro <= longitudeMotorista){
+      sLong = latitudaPassageiro;
+      nLong = latitudaMotorista;
+    }
+    else{
+      sLong = latitudaMotorista;
+      nLong = latitudaPassageiro;
+    }
+    
+    //O Southwest tem que ser menor que o Northeast 
+    _movimentarCameraBounds(
+       LatLngBounds(
+        northeast: LatLng(nLat, nLong),
+        southwest: LatLng(sLat, sLong), 
+        )
+    );
+}
+
+//metodo para centralizar passageiro e motorista independentemente das suas posicoes.
+    _movimentarCameraBounds(LatLngBounds latLngBounds) async {
+      GoogleMapController googleMapController = await _controller.future;
+      googleMapController.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        latLngBounds, 
+        100
+        )
+  );
 }
 
 _exibirDoisMarcadores(LatLng latLngPassageiro, LatLng latLnMotorista){
